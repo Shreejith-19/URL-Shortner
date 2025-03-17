@@ -6,5 +6,7 @@ router.route("/")
     .post(func.handleGenerateShortUrl)
 router.route("/:shortId")
     .get(func.handleRedirection)
-
+// router.get("/:shortId/analytics",func.handleGetAnalytics)
+router.route("/:shortId/analytics")
+    .get(func.handleGetAnalytics)
 module.exports = router

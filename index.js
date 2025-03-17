@@ -4,7 +4,7 @@ const urlRouter = require("./routes/url.js")
 const app = express()
 const port = 4000
 
-app.use(express.json())// to put raw data in req.body
+app.use(express.json())
 app.use("/url",urlRouter)
 
 const URL = require("./models/url.js")

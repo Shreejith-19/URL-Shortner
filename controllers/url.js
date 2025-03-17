@@ -13,7 +13,9 @@ handleGenerateShortUrl = async(req,res)=>{
         try{
             await URL.create({
                 url:body.url,
-                shortURL:shortid.generate()
+                shortURL:shortid.generate(),
+                history:[],
+                clicks:0
             })
             return res.status(201).json({"message":"user created"})
 
@@ -21,7 +23,7 @@ handleGenerateShortUrl = async(req,res)=>{
             if(err.code == 11000){
                 return res.status(409).json({"message":"duplicate key detected"})
             }else{
-                return res.status(404).json({"message":"unexpected Error"})
+                return res.status(500).json({"message":"unexpected Error"})
             }
         }
     }
@@ -29,13 +31,27 @@ handleGenerateShortUrl = async(req,res)=>{
 
 handleRedirection = async(req,res)=>{
     let id = req.params.shortId
-    let allUrls = URL.find({})
-    let target = await allUrls.findOne({shortURL:id})
-    console.log(target)
+    let target = await URL.findOneAndUpdate(
+        {shortURL:id},
+        {$push:{history:{visits:new Date().toLocaleString()}},
+         $inc:{clicks:1}
+        },
+        {new:true}//returns document after update to target
+    )
     if(target){
         return res.redirect(target.url)
     }else{
-        return res.status(404).json({"errMessgae":"shortId does not exist"})
+        return res.status(404).json({"errMessage":"id does not exist"})
     }
 }
-module.exports = {welcomeUser,handleGenerateShortUrl,handleRedirection}
+handleGetAnalytics = async (req,res)=>{
+    let id = req.params.shortId
+    let analytics = await URL.findOne({shortURL:id})
+    console.log(analytics)
+    if(analytics){
+        return res.status(200).json(analytics) 
+    }else{
+        return res.status(404).json({"errMessage":"analytics not found"})
+    }
+}
+module.exports = {welcomeUser,handleGenerateShortUrl,handleRedirection,handleGetAnalytics}
